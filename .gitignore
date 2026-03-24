@@ -1,0 +1,13 @@
+sms_log.txt
+
+# Uploaded payment proofs
+uploads/
+
+# Composer
+vendor/
+composer.lock
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/

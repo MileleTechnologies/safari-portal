@@ -59,7 +59,7 @@ $tripName = getSetting('trip_name') ?: APP_NAME;
 </head>
 <body>
 <nav class="navbar">
-    <a class="navbar-brand" href="admin-dashboard.php"><span class="icon">🦁</span> Admin Panel</a>
+    <a class="navbar-brand" href="admin-dashboard.php"><span class="icon"><i class="fa-solid fa-paw"></i></span> Admin Panel</a>
     <div class="navbar-links">
         <a href="admin-dashboard.php">Dashboard</a>
         <a href="payment-requests.php">Requests</a>
@@ -79,21 +79,21 @@ $tripName = getSetting('trip_name') ?: APP_NAME;
 
     <?php if ($flash): ?>
         <div class="alert alert-<?= $flash['type'] ?>">
-            <?= $flash['type']==='success' ? '✅' : '⚠️' ?> <?= htmlspecialchars($flash['message']) ?>
+            <?= $flash['type']==='success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-triangle-exclamation"></i>' ?> <?= htmlspecialchars($flash['message']) ?>
         </div>
     <?php endif; ?>
 
     <div class="alert alert-info mb-3">
-        ℹ️ Payments recorded here are <strong>approved immediately</strong> and trigger SMS notifications
+        <i class="fa-solid fa-circle-info"></i> Payments recorded here are <strong>approved immediately</strong> and trigger SMS notifications
         (including the WhatsApp invite on first payment). For employee self-service, use the User Portal.
     </div>
 
     <?php if (!empty($errors)): ?>
-        <div class="alert alert-error">⚠️ <?= implode(' ', array_map('htmlspecialchars', $errors)) ?></div>
+        <div class="alert alert-error"><i class="fa-solid fa-triangle-exclamation"></i> <?= implode(' ', array_map('htmlspecialchars', $errors)) ?></div>
     <?php endif; ?>
 
     <div class="card">
-        <div class="card-header"><h3>💳 Payment Details</h3></div>
+        <div class="card-header"><h3><i class="fa-solid fa-credit-card"></i> Payment Details</h3></div>
         <div class="card-body">
             <form method="POST">
                 <div class="form-group">
@@ -151,7 +151,7 @@ $tripName = getSetting('trip_name') ?: APP_NAME;
                 </div>
 
                 <div class="flex gap-2 mt-2">
-                    <button type="submit" name="save_payment" class="btn btn-primary">💾 Save &amp; Approve</button>
+                    <button type="submit" name="save_payment" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save &amp; Approve</button>
                     <a href="admin-dashboard.php" class="btn btn-outline">Cancel</a>
                 </div>
             </form>
@@ -159,7 +159,7 @@ $tripName = getSetting('trip_name') ?: APP_NAME;
     </div>
 </div>
 
-<div class="footer">🌍 Safari Portal — Admin</div>
+<div class="footer"><i class="fa-solid fa-globe"></i> Safari Portal — Admin</div>
 
 <script>
 const currency = '<?= CURRENCY ?>';
@@ -170,7 +170,7 @@ function updateInfo(sel){
     const paid=parseFloat(opt.dataset.paid),target=parseFloat(opt.dataset.target);
     const pct=target>0?Math.min(100,Math.round((paid/target)*100)):0;
     document.getElementById('uiName').textContent=opt.dataset.name;
-    document.getElementById('uiPhone').textContent=opt.dataset.phone ? '📱 '+opt.dataset.phone : '(no phone)';
+    document.getElementById('uiPhone').textContent=opt.dataset.phone ? 'Phone: '+opt.dataset.phone : '(no phone)';
     document.getElementById('uiPaid').textContent=fmt(paid);
     document.getElementById('uiRemaining').textContent=fmt(parseFloat(opt.dataset.remaining));
     document.getElementById('uiBar').style.width=pct+'%';

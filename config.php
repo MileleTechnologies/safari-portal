@@ -15,7 +15,7 @@ define('ADMIN_PASSWORD', 'safari2025');  // Change this!
 
 // ----- APP SETTINGS -----
 define('APP_NAME', 'Safari Contribution Portal');
-define('CURRENCY', 'KSh');   // Change to your currency symbol
+define('CURRENCY', 'TSh');   // Change to your currency symbol
 
 // ----- BASE URL (auto-detect) -----
 $baseUrl = '';
@@ -31,8 +31,8 @@ define('BASE_URL', $baseUrl);
 // Use 'log' during development (writes to sms_log.txt)
 define('SMS_PROVIDER', 'log');
 
-// Default country code for local numbers (Kenya = 254)
-define('SMS_COUNTRY_CODE', '254');
+// Default country code for local numbers (Tanzania = 255)
+define('SMS_COUNTRY_CODE', '255');
 
 // ----- Africa's Talking credentials -----
 // Sign up at https://africastalking.com
@@ -44,6 +44,9 @@ define('SMS_COUNTRY_CODE', '254');
 // Sign up at https://twilio.com
 // define('TWILIO_ACCOUNT_SID', 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
 // define('TWILIO_AUTH_TOKEN',  'your_auth_token_here');
+// Option A (recommended): use a Messaging Service
+// define('TWILIO_MESSAGING_SERVICE_SID', 'MGxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+// Option B: use a Twilio phone number
 // define('TWILIO_FROM_NUMBER', '+1234567890');  // Your Twilio phone number
 // =====================================================
 
@@ -160,6 +163,24 @@ function requireAdmin() {
     if (empty($_SESSION['admin_logged_in'])) {
         redirect(BASE_URL . '/admin/admin-login.php');
     }
+}
+
+// ----- HELPER: User auth check -----
+function requireUser() {
+    if (empty($_SESSION['user_id'])) {
+        redirect(BASE_URL . '/login.php');
+    }
+}
+
+// ----- HELPER: Get current logged-in user -----
+function getCurrentUser() {
+    if (empty($_SESSION['user_id'])) {
+        return null;
+    }
+    $db = getDB();
+    $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    return $stmt->fetch();
 }
 
 // ----- HELPER: Flash messages -----

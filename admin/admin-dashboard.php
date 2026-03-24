@@ -78,10 +78,11 @@ $overallPct     = $totalTarget > 0 ? min(100, round(($totalCollected / $totalTar
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
 </head>
 <body>
 <nav class="navbar">
-    <a class="navbar-brand" href="admin-dashboard.php"><span class="icon">&#x1F981;</span> Admin Panel</a>
+    <a class="navbar-brand" href="admin-dashboard.php"><span class="icon"><i class="fa-solid fa-paw"></i></span> Admin Panel</a>
     <div class="navbar-links">
         <a href="admin-dashboard.php" class="active">Dashboard</a>
         <a href="add-user.php">Add User</a>
@@ -100,29 +101,29 @@ $overallPct     = $totalTarget > 0 ? min(100, round(($totalCollected / $totalTar
 
 <?php if ($flash): ?>
 <div class="alert alert-<?= $flash['type'] ?>">
-    <?= $flash['type']==='success'?'&#x2705;':'&#x26A0;&#xFE0F;' ?> <?= htmlspecialchars($flash['message']) ?>
+    <?= $flash['type']==='success'?'<i class="fa-solid fa-circle-check"></i>':'<i class="fa-solid fa-triangle-exclamation"></i>' ?> <?= htmlspecialchars($flash['message']) ?>
 </div>
 <?php endif; ?>
 
 <!-- STATS -->
 <div class="stats-grid mb-3">
     <div class="stat-card">
-        <div class="stat-icon">&#x1F465;</div>
+        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
         <div class="stat-value"><?= $totalUsers ?></div>
         <div class="stat-label">Total Users</div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon">&#x1F4B0;</div>
+        <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
         <div class="stat-value"><?= money($totalCollected) ?></div>
         <div class="stat-label">Collected</div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon">&#x2705;</div>
+        <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
         <div class="stat-value"><?= $completed ?></div>
         <div class="stat-label">Completed</div>
     </div>
     <div class="stat-card" style="position:relative;">
-        <div class="stat-icon">&#x23F3;</div>
+        <div class="stat-icon"><i class="fa-regular fa-clock"></i></div>
         <div class="stat-value" style="color:<?= $pendingCount>0?'#856404':'var(--brown)' ?>"><?= $pendingCount ?></div>
         <div class="stat-label">Pending Review</div>
         <?php if ($pendingCount > 0): ?>
@@ -149,8 +150,8 @@ $overallPct     = $totalTarget > 0 ? min(100, round(($totalCollected / $totalTar
 </div>
 
 <div class="flex gap-2 wrap mb-3">
-    <a href="add-user.php" class="btn btn-primary">&#x2795; Add User</a>
-    <a href="record-payment.php" class="btn btn-success">&#x1F4B3; Direct Payment</a>
+    <a href="add-user.php" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Add User</a>
+    <a href="record-payment.php" class="btn btn-success"><i class="fa-solid fa-credit-card"></i> Direct Payment</a>
 </div>
 
 <!-- ==============================
@@ -158,7 +159,7 @@ $overallPct     = $totalTarget > 0 ? min(100, round(($totalCollected / $totalTar
      ============================== -->
 <div class="card mb-3" id="requests">
     <div class="card-header">
-        <h3>&#x23F3; Payment Requests</h3>
+        <h3><i class="fa-regular fa-clock"></i> Payment Requests</h3>
         <?php if ($pendingCount > 0): ?>
             <span class="badge" style="background:#ffc107;color:#7d6608;"><?= $pendingCount ?> pending</span>
         <?php else: ?>
@@ -168,7 +169,7 @@ $overallPct     = $totalTarget > 0 ? min(100, round(($totalCollected / $totalTar
 
     <?php if (empty($pendingPayments)): ?>
         <div class="empty-state">
-            <div class="empty-icon">&#x2705;</div>
+            <div class="empty-icon"><i class="fa-solid fa-circle-check"></i></div>
             <p>No pending payment requests. All caught up!</p>
         </div>
     <?php else: ?>
@@ -208,7 +209,7 @@ $overallPct     = $totalTarget > 0 ? min(100, round(($totalCollected / $totalTar
                                      onclick="openLightbox('<?= $fUrl ?>')" alt="Proof"
                                      title="Click to enlarge">
                             <?php else: ?>
-                                <a href="<?= $fUrl ?>" target="_blank" class="proof-pdf-icon" title="Open PDF">&#x1F4C4;</a>
+                                <a href="<?= $fUrl ?>" target="_blank" class="proof-pdf-icon" title="Open PDF"><i class="fa-solid fa-file-pdf"></i></a>
                             <?php endif; ?>
                         <?php else: ?>
                             <span style="color:var(--text-muted);font-size:0.82rem;">None</span>
@@ -225,15 +226,15 @@ $overallPct     = $totalTarget > 0 ? min(100, round(($totalCollected / $totalTar
                         <form method="POST" style="display:inline;"
                               onsubmit="return confirm('Approve this payment of <?= money($p['amount']) ?> for <?= htmlspecialchars($p['full_name']) ?>?')">
                             <input type="hidden" name="payment_id" value="<?= $p['id'] ?>">
-                            <button type="submit" name="approve_payment" class="btn btn-sm btn-approve">
-                                &#x2705; Approve
+                    <button type="submit" name="approve_payment" class="btn btn-sm btn-approve">
+                                <i class="fa-solid fa-circle-check"></i> Approve
                             </button>
                         </form>
                         <!-- REJECT -->
                         <button type="button" class="btn btn-sm btn-reject"
                                 style="margin-left:0.3rem;"
                                 onclick="openRejectModal(<?= $p['id'] ?>, '<?= htmlspecialchars($p['full_name']) ?>', '<?= money($p['amount']) ?>')">
-                            &#x274C; Reject
+                            <i class="fa-solid fa-circle-xmark"></i> Reject
                         </button>
                     </td>
                 </tr>
@@ -247,12 +248,12 @@ $overallPct     = $totalTarget > 0 ? min(100, round(($totalCollected / $totalTar
 <!-- USERS TABLE -->
 <div class="card mb-3">
     <div class="card-header">
-        <h3>&#x1F465; All Users</h3>
+        <h3><i class="fa-solid fa-users"></i> All Users</h3>
         <span class="badge badge-partial"><?= $totalUsers ?> users</span>
     </div>
     <?php if (empty($users)): ?>
         <div class="empty-state">
-            <div class="empty-icon">&#x1F464;</div>
+            <div class="empty-icon"><i class="fa-solid fa-user"></i></div>
             <p>No users yet. <a href="add-user.php">Add the first user</a>.</p>
         </div>
     <?php else: ?>
@@ -279,7 +280,7 @@ $overallPct     = $totalTarget > 0 ? min(100, round(($totalCollected / $totalTar
                 $rem     = max(0, $tgt - $paid);
                 $pct     = $tgt > 0 ? min(100, round(($paid / $tgt) * 100)) : 0;
                 $status  = $pct >= 100 ? 'complete' : ($pct > 0 ? 'partial' : 'none');
-                $sLabel  = $pct >= 100 ? '&#x2705; Complete' : ($pct > 0 ? '&#x23F3; Partial' : '&#x274C; None');
+                $sLabel  = $pct >= 100 ? '<i class="fa-solid fa-circle-check"></i> Complete' : ($pct > 0 ? '<i class="fa-regular fa-clock"></i> Partial' : '<i class="fa-solid fa-circle-xmark"></i> None');
             ?>
             <tr>
                 <td><strong><?= htmlspecialchars($u['full_name']) ?></strong></td>
@@ -288,7 +289,7 @@ $overallPct     = $totalTarget > 0 ? min(100, round(($totalCollected / $totalTar
                 <td style="color:var(--green);font-weight:600;"><?= money($paid) ?></td>
                 <td>
                     <?php if ($pending > 0): ?>
-                        <span style="color:#856404;font-size:0.85rem;">&#x23F3; <?= money($pending) ?></span>
+                        <span style="color:#856404;font-size:0.85rem;"><i class="fa-regular fa-clock"></i> <?= money($pending) ?></span>
                     <?php else: ?>
                         <span style="color:var(--text-muted);font-size:0.82rem;">—</span>
                     <?php endif; ?>
@@ -302,6 +303,7 @@ $overallPct     = $totalTarget > 0 ? min(100, round(($totalCollected / $totalTar
                 </td>
                 <td><span class="badge badge-<?= $status ?>"><?= $sLabel ?></span></td>
                 <td>
+                    <a href="edit-user.php?id=<?= $u['id'] ?>" class="btn btn-sm btn-outline"><i class="fa-solid fa-pen-to-square"></i></a>
                     <a href="record-payment.php?user_id=<?= $u['id'] ?>" class="btn btn-sm btn-primary">Pay</a>
                     <a href="user-payments.php?user_id=<?= $u['id'] ?>" class="btn btn-sm btn-outline" style="margin-left:0.3rem;">History</a>
                 </td>
@@ -315,7 +317,7 @@ $overallPct     = $totalTarget > 0 ? min(100, round(($totalCollected / $totalTar
 
 <!-- SETTINGS -->
 <div class="card">
-    <div class="card-header"><h3>&#x2699;&#xFE0F; Settings</h3></div>
+    <div class="card-header"><h3><i class="fa-solid fa-gear"></i> Settings</h3></div>
     <div class="card-body">
         <form method="POST">
             <div class="form-group">
@@ -329,7 +331,7 @@ $overallPct     = $totalTarget > 0 ? min(100, round(($totalCollected / $totalTar
                        value="<?= htmlspecialchars($whatsapp) ?>" placeholder="https://chat.whatsapp.com/xxxxx">
                 <small style="color:var(--text-muted);">Unlocks for users after their first approved payment.</small>
             </div>
-            <button type="submit" name="save_settings" class="btn btn-primary">&#x1F4BE; Save Settings</button>
+            <button type="submit" name="save_settings" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Settings</button>
         </form>
     </div>
 </div>
@@ -340,9 +342,9 @@ $overallPct     = $totalTarget > 0 ? min(100, round(($totalCollected / $totalTar
 <div id="rejectModal" class="modal-overlay" style="display:none;">
     <div class="modal-box" style="max-width:420px;">
         <div class="flex-between mb-2">
-            <h3>&#x274C; Reject Payment</h3>
+            <h3><i class="fa-solid fa-circle-xmark"></i> Reject Payment</h3>
             <button onclick="document.getElementById('rejectModal').style.display='none'"
-                    style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-muted);">&#x2715;</button>
+                    style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-muted);"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <p id="rejectDesc" style="margin-bottom:1.2rem;"></p>
         <form method="POST">
@@ -354,7 +356,7 @@ $overallPct     = $totalTarget > 0 ? min(100, round(($totalCollected / $totalTar
             </div>
             <div class="flex gap-2 mt-2">
                 <button type="submit" name="reject_payment" class="btn btn-reject">
-                    &#x274C; Confirm Rejection
+                    <i class="fa-solid fa-circle-xmark"></i> Confirm Rejection
                 </button>
                 <button type="button" onclick="document.getElementById('rejectModal').style.display='none'"
                         class="btn btn-outline">Cancel</button>
@@ -365,12 +367,12 @@ $overallPct     = $totalTarget > 0 ? min(100, round(($totalCollected / $totalTar
 
 <!-- LIGHTBOX -->
 <div id="lightbox" class="lightbox-overlay" style="display:none;" onclick="closeLightbox()">
-    <button class="lightbox-close" onclick="closeLightbox()">&#x2715;</button>
+    <button class="lightbox-close" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></button>
     <img id="lightboxImg" src="" alt="Payment Proof">
 </div>
 
 <div class="footer">
-    &#x1F30D; <?= htmlspecialchars($tripName) ?> &nbsp;|&nbsp; Admin Panel &nbsp;|&nbsp;
+    <i class="fa-solid fa-globe"></i> <?= htmlspecialchars($tripName) ?> &nbsp;|&nbsp; Admin Panel &nbsp;|&nbsp;
     <a href="admin-logout.php">Logout</a>
 </div>
 

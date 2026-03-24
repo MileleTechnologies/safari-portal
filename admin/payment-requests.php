@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['pay
         }
         $db->prepare("UPDATE payments SET status='rejected', reviewed_at=NOW(), rejection_reason=? WHERE id=?")
            ->execute([$reason, $payId]);
-        setFlash('success', '❌ Payment from ' . $pay['full_name'] . ' has been rejected.');
+        setFlash('success', '<i class="fa-solid fa-circle-xmark"></i> Payment from ' . $pay['full_name'] . ' has been rejected.');
     }
 
     redirect('payment-requests.php');
@@ -118,7 +118,7 @@ $smsEnabled = getSetting('sms_notifications_enabled') === '1';
 <body>
 
 <nav class="navbar">
-    <a class="navbar-brand" href="admin-dashboard.php"><span class="icon">🦁</span> Admin Panel</a>
+    <a class="navbar-brand" href="admin-dashboard.php"><span class="icon"><i class="fa-solid fa-paw"></i></span> Admin Panel</a>
     <div class="navbar-links">
         <a href="admin-dashboard.php">Dashboard</a>
         <a href="add-user.php">Add User</a>
@@ -147,19 +147,19 @@ $smsEnabled = getSetting('sms_notifications_enabled') === '1';
 
     <?php if ($flash): ?>
         <div class="alert alert-<?= $flash['type'] ?>">
-            <?= $flash['type'] === 'success' ? '✅' : '⚠️' ?> <?= htmlspecialchars($flash['message']) ?>
+            <?= $flash['type'] === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-triangle-exclamation"></i>' ?> <?= htmlspecialchars($flash['message']) ?>
         </div>
     <?php endif; ?>
 
     <!-- SMS status banner -->
     <?php if (!$smsEnabled): ?>
         <div class="alert alert-warning mb-3" style="font-size:.88rem;">
-            📵 SMS notifications are <strong>disabled</strong>.
+            <i class="fa-solid fa-mobile-screen"></i> SMS notifications are <strong>disabled</strong>.
             <a href="whatsapp-settings.php" style="color:var(--brown);text-decoration:underline;">Enable in WhatsApp &amp; SMS Settings →</a>
         </div>
     <?php else: ?>
         <div class="alert alert-info mb-3" style="font-size:.88rem;">
-            📱 SMS notifications <strong>active</strong> (provider: <code><?= SMS_PROVIDER ?></code>).
+            <i class="fa-solid fa-mobile-screen-button"></i> SMS notifications <strong>active</strong> (provider: <code><?= SMS_PROVIDER ?></code>).
             On first approval the WhatsApp invite is automatically sent by SMS.
         </div>
     <?php endif; ?>
@@ -167,29 +167,29 @@ $smsEnabled = getSetting('sms_notifications_enabled') === '1';
     <!-- TAB BAR -->
     <div class="tab-bar">
         <a href="?status=pending"  class="tab <?= $filterStatus==='pending'  ? 'active-pending'  : '' ?>">
-            ⏳ Pending  <span class="cnt" style="background:#f1c40f;color:#7d6608;"><?= $countPending ?></span>
+            <i class="fa-regular fa-clock"></i> Pending  <span class="cnt" style="background:#f1c40f;color:#7d6608;"><?= $countPending ?></span>
         </a>
         <a href="?status=approved" class="tab <?= $filterStatus==='approved' ? 'active-approved' : '' ?>">
-            ✅ Approved <span class="cnt" style="background:#27ae60;color:#fff;"><?= $countApproved ?></span>
+            <i class="fa-solid fa-circle-check"></i> Approved <span class="cnt" style="background:#27ae60;color:#fff;"><?= $countApproved ?></span>
         </a>
         <a href="?status=rejected" class="tab <?= $filterStatus==='rejected' ? 'active-rejected' : '' ?>">
-            ❌ Rejected <span class="cnt" style="background:#e74c3c;color:#fff;"><?= $countRejected ?></span>
+            <i class="fa-solid fa-circle-xmark"></i> Rejected <span class="cnt" style="background:#e74c3c;color:#fff;"><?= $countRejected ?></span>
         </a>
         <a href="?status=all"      class="tab <?= $filterStatus==='all'      ? 'active-all'      : '' ?>">
-            📋 All      <span class="cnt" style="background:var(--gold);color:#fff;"><?= $countAll ?></span>
+            <i class="fa-solid fa-list"></i> All      <span class="cnt" style="background:var(--gold);color:#fff;"><?= $countAll ?></span>
         </a>
     </div>
 
     <!-- TABLE -->
     <div class="card">
         <div class="card-header">
-            <h3><?php $labels=['pending'=>'⏳ Pending Review','approved'=>'✅ Approved','rejected'=>'❌ Rejected','all'=>'📋 All Requests']; echo $labels[$filterStatus]; ?></h3>
+            <h3><?php $labels=['pending'=>'<i class="fa-regular fa-clock"></i> Pending Review','approved'=>'<i class="fa-solid fa-circle-check"></i> Approved','rejected'=>'<i class="fa-solid fa-circle-xmark"></i> Rejected','all'=>'<i class="fa-solid fa-list"></i> All Requests']; echo $labels[$filterStatus]; ?></h3>
             <span class="badge badge-partial"><?= count($payments) ?> record(s)</span>
         </div>
 
         <?php if (empty($payments)): ?>
             <div class="empty-state">
-                <div class="empty-icon"><?= $filterStatus==='pending' ? '🎉' : '📋' ?></div>
+                <div class="empty-icon"><?= $filterStatus==='pending' ? '<i class="fa-solid fa-champagne-glasses"></i>' : '<i class="fa-solid fa-list"></i>' ?></div>
                 <p><?= $filterStatus==='pending' ? 'No pending requests — you\'re all caught up!' : 'No records found.' ?></p>
             </div>
         <?php else: ?>
@@ -215,7 +215,7 @@ $smsEnabled = getSetting('sms_notifications_enabled') === '1';
                         <?php foreach ($payments as $p):
                             $rowCls  = $p['status']==='pending' ? 'row-pending' : ($p['status']==='rejected' ? 'row-rejected' : '');
                             $badgeCls= $p['status']==='approved' ? 'badge-complete' : ($p['status']==='rejected' ? 'badge-none' : 'badge-pending');
-                            $icon    = $p['status']==='approved' ? '✅' : ($p['status']==='rejected' ? '❌' : '⏳');
+                            $icon    = $p['status']==='approved' ? '<i class="fa-solid fa-circle-check"></i>' : ($p['status']==='rejected' ? '<i class="fa-solid fa-circle-xmark"></i>' : '<i class="fa-regular fa-clock"></i>');
                             $proofExt= !empty($p['proof_file']) ? strtolower(pathinfo($p['proof_file'],PATHINFO_EXTENSION)) : '';
                             $isImg   = in_array($proofExt,['jpg','jpeg','png','gif']);
 
@@ -252,7 +252,7 @@ $smsEnabled = getSetting('sms_notifications_enabled') === '1';
                                                  alt="Proof">
                                         <?php else: ?>
                                             <a href="../uploads/<?= htmlspecialchars($p['proof_file']) ?>"
-                                               target="_blank" class="btn btn-sm btn-outline">📄 PDF</a>
+                                               target="_blank" class="btn btn-sm btn-outline"><i class="fa-solid fa-file-pdf"></i> PDF</a>
                                         <?php endif; ?>
                                     <?php else: ?>
                                         <span style="color:var(--text-muted);font-size:.8rem;">—</span>
@@ -272,19 +272,17 @@ $smsEnabled = getSetting('sms_notifications_enabled') === '1';
                                 <td>
                                     <?php if ($p['status'] === 'approved'): ?>
                                         <?php if ($wasFirst && $p['whatsapp_invited']): ?>
-                                            <span class="wa-chip">📱 WA Invited</span>
+                                            <span class="wa-chip"><i class="fa-solid fa-mobile-screen"></i> WA Invited</span>
                                         <?php elseif ($wasFirst): ?>
-                                            <span class="wa-chip" style="background:#fef9e7;color:#7d6608;">📱 First ✓</span>
+                                            <span class="wa-chip" style="background:#fef9e7;color:#7d6608;"><i class="fa-solid fa-mobile-screen"></i> First <i class="fa-solid fa-check"></i></span>
                                         <?php else: ?>
-                                            <span class="sms-chip">📩 SMS Sent</span>
+                                            <span class="sms-chip"><i class="fa-solid fa-envelope"></i> SMS Sent</span>
                                         <?php endif; ?>
                                     <?php elseif ($p['status'] === 'pending'): ?>
                                         <?php if (!empty($p['phone_number'])): ?>
-                                            <span style="font-size:.75rem;color:var(--text-muted);">
-                                                📱 On approval
-                                            </span>
+                                            <span style="font-size:.75rem;color:var(--text-muted);"><i class="fa-solid fa-mobile-screen"></i> On approval</span>
                                         <?php else: ?>
-                                            <span style="font-size:.75rem;color:var(--red);">⚠️ No phone</span>
+                                            <span style="font-size:.75rem;color:var(--red);"><i class="fa-solid fa-triangle-exclamation"></i> No phone</span>
                                         <?php endif; ?>
                                     <?php else: ?>
                                         <span style="font-size:.75rem;color:var(--text-muted);">—</span>
@@ -298,10 +296,10 @@ $smsEnabled = getSetting('sms_notifications_enabled') === '1';
                                                       onsubmit="return confirm('Approve <?= money($p['amount']) ?> from <?= addslashes($p['full_name']) ?>?\n\n<?= $p['whatsapp_invited'] ? '' : 'This is their FIRST approval — WhatsApp invite will be sent by SMS.' ?>') ">
                                                     <input type="hidden" name="payment_id" value="<?= $p['id'] ?>">
                                                     <input type="hidden" name="action" value="approve">
-                                                    <button type="submit" class="btn btn-sm btn-success">✅ Approve</button>
+                                                    <button type="submit" class="btn btn-sm btn-success"><i class="fa-solid fa-circle-check"></i> Approve</button>
                                                 </form>
                                                 <button onclick="openRejectForm(<?= $p['id'] ?>,'<?= addslashes($p['full_name']) ?>','<?= money($p['amount']) ?>')"
-                                                        class="btn btn-sm btn-danger">❌ Reject</button>
+                                                        class="btn btn-sm btn-danger"><i class="fa-solid fa-circle-xmark"></i> Reject</button>
                                             </div>
                                         <?php else: ?>
                                             <span style="color:var(--text-muted);font-size:.8rem;">Reviewed</span>
@@ -318,15 +316,15 @@ $smsEnabled = getSetting('sms_notifications_enabled') === '1';
 
 </div>
 
-<div class="footer">🌍 <?= htmlspecialchars($tripName) ?> — Admin Panel</div>
+<div class="footer"><i class="fa-solid fa-globe"></i> <?= htmlspecialchars($tripName) ?> — Admin Panel</div>
 
 <!-- REJECT MODAL -->
 <div id="rejectModal" class="modal-overlay" style="display:none;">
     <div class="modal-box">
         <div class="flex-between mb-2">
-            <h3>❌ Reject Payment</h3>
+            <h3><i class="fa-solid fa-circle-xmark"></i> Reject Payment</h3>
             <button onclick="closeRejectModal()"
-                    style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-muted);">✕</button>
+                    style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-muted);"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div id="rejectInfo" style="background:#fdecea;padding:.75rem 1rem;border-radius:8px;
                                      margin-bottom:1.2rem;font-size:.9rem;color:#c0392b;"></div>
@@ -342,7 +340,7 @@ $smsEnabled = getSetting('sms_notifications_enabled') === '1';
                 <small style="color:var(--text-muted);">This message is shown to the employee.</small>
             </div>
             <div class="flex gap-2 mt-2">
-                <button type="submit" class="btn btn-danger">❌ Confirm Rejection</button>
+                <button type="submit" class="btn btn-danger"><i class="fa-solid fa-circle-xmark"></i> Confirm Rejection</button>
                 <button type="button" onclick="closeRejectModal()" class="btn btn-outline">Cancel</button>
             </div>
         </form>
@@ -357,7 +355,7 @@ $smsEnabled = getSetting('sms_notifications_enabled') === '1';
         <button onclick="document.getElementById('proofModal').style.display='none'"
                 style="position:absolute;top:-12px;right:-12px;background:var(--red);color:#fff;
                        border:none;border-radius:50%;width:30px;height:30px;font-size:1rem;
-                       cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+                       cursor:pointer;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-xmark"></i></button>
     </div>
 </div>
 

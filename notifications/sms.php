@@ -119,34 +119,43 @@ class AfricasTalkingSmsProvider implements SmsProviderInterface {
 // Required config constants (add to config.php):
 //   define('TWILIO_ACCOUNT_SID', 'ACxxxxx');
 //   define('TWILIO_AUTH_TOKEN',  'your_token');
-//   define('TWILIO_FROM_NUMBER', '+1234567890'); // your Twilio number
+//   define('TWILIO_FROM_NUMBER', '+1234567890'); // your Twilio number (optional if using messaging service)
+//   define('TWILIO_MESSAGING_SERVICE_SID', 'MGxxxxx'); // optional (preferred)
 // -----------------------------------------------
 class TwilioSmsProvider implements SmsProviderInterface {
     private string $accountSid;
     private string $authToken;
     private string $fromNumber;
+    private string $messagingServiceSid;
 
     public function __construct() {
         $this->accountSid = defined('TWILIO_ACCOUNT_SID') ? TWILIO_ACCOUNT_SID : '';
         $this->authToken  = defined('TWILIO_AUTH_TOKEN')  ? TWILIO_AUTH_TOKEN  : '';
         $this->fromNumber = defined('TWILIO_FROM_NUMBER') ? TWILIO_FROM_NUMBER : '';
+        $this->messagingServiceSid = defined('TWILIO_MESSAGING_SERVICE_SID') ? TWILIO_MESSAGING_SERVICE_SID : '';
     }
 
     public function send(string $to, string $message): array {
-        if (empty($this->accountSid) || empty($this->authToken) || empty($this->fromNumber)) {
+        if (empty($this->accountSid) || empty($this->authToken) || (empty($this->messagingServiceSid) && empty($this->fromNumber))) {
             return ['success' => false, 'message' => 'Twilio credentials not configured.', 'raw' => null];
         }
 
         $url = "https://api.twilio.com/2010-04-01/Accounts/{$this->accountSid}/Messages.json";
 
+        $payload = [
+            'To'   => $to,
+            'Body' => $message,
+        ];
+        if (!empty($this->messagingServiceSid)) {
+            $payload['MessagingServiceSid'] = $this->messagingServiceSid;
+        } else {
+            $payload['From'] = $this->fromNumber;
+        }
+
         $ch = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => http_build_query([
-                'From' => $this->fromNumber,
-                'To'   => $to,
-                'Body' => $message,
-            ]),
+            CURLOPT_POSTFIELDS     => http_build_query($payload),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_USERPWD        => $this->accountSid . ':' . $this->authToken,
             CURLOPT_HTTPHEADER     => ['Content-Type: application/x-www-form-urlencoded'],

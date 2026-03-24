@@ -46,8 +46,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_invite'])) {
             $db->prepare("UPDATE users SET whatsapp_invited=1 WHERE id=?")->execute([$uid]);
             setFlash($result['success'] ? 'success' : 'error',
                 $result['success']
-                    ? '📱 WhatsApp invite resent to ' . $u['full_name'] . ' (' . $u['phone_number'] . ')'
-                    : '⚠️ SMS failed for ' . $u['full_name'] . ': ' . $result['message']
+                    ? '<i class="fa-solid fa-mobile-screen"></i> WhatsApp invite resent to ' . $u['full_name'] . ' (' . $u['phone_number'] . ')'
+                    : '<i class="fa-solid fa-triangle-exclamation"></i> SMS failed for ' . $u['full_name'] . ': ' . $result['message']
             );
         } else {
             setFlash('error', 'User not found, no phone number, or WhatsApp link not set.');
@@ -124,7 +124,7 @@ if (file_exists($smsLogFile)) {
 <body>
 
 <nav class="navbar">
-    <a class="navbar-brand" href="admin-dashboard.php"><span class="icon">🦁</span> Admin Panel</a>
+    <a class="navbar-brand" href="admin-dashboard.php"><span class="icon"><i class="fa-solid fa-paw"></i></span> Admin Panel</a>
     <div class="navbar-links">
         <a href="admin-dashboard.php">Dashboard</a>
         <a href="add-user.php">Add User</a>
@@ -136,7 +136,7 @@ if (file_exists($smsLogFile)) {
 
 <div class="page-header">
     <div class="subtitle">Admin</div>
-    <h1>📱 WhatsApp &amp; SMS Settings</h1>
+    <h1><i class="fa-brands fa-whatsapp"></i> WhatsApp &amp; SMS Settings</h1>
     <p>Configure group invite link and notification preferences</p>
 </div>
 
@@ -144,13 +144,13 @@ if (file_exists($smsLogFile)) {
 
     <?php if ($flash): ?>
         <div class="alert alert-<?= $flash['type'] ?>">
-            <?= $flash['type']==='success' ? '✅' : '⚠️' ?> <?= htmlspecialchars($flash['message']) ?>
+            <?= $flash['type']==='success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-triangle-exclamation"></i>' ?> <?= htmlspecialchars($flash['message']) ?>
         </div>
     <?php endif; ?>
 
     <!-- ===== MAIN SETTINGS FORM ===== -->
     <div class="card mb-3">
-        <div class="card-header"><h3>⚙️ Group &amp; Notification Settings</h3></div>
+        <div class="card-header"><h3><i class="fa-solid fa-gear"></i> Group &amp; Notification Settings</h3></div>
         <div class="card-body">
             <form method="POST" action="">
 
@@ -176,7 +176,7 @@ if (file_exists($smsLogFile)) {
                     <div style="margin-bottom:1rem;">
                         <a href="<?= htmlspecialchars($whatsappLink) ?>" target="_blank" rel="noopener"
                            class="btn btn-whatsapp btn-sm">
-                            📱 Test Link — Open Group
+                            <i class="fa-brands fa-whatsapp"></i> Test Link — Open Group
                         </a>
                     </div>
                 <?php endif; ?>
@@ -196,14 +196,14 @@ if (file_exists($smsLogFile)) {
                     </div>
                 </div>
 
-                <button type="submit" name="save_settings" class="btn btn-primary">💾 Save Settings</button>
+                <button type="submit" name="save_settings" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Settings</button>
             </form>
         </div>
     </div>
 
     <!-- ===== SMS PROVIDER STATUS ===== -->
     <div class="card mb-3">
-        <div class="card-header"><h3>📡 SMS Provider Status</h3></div>
+        <div class="card-header"><h3><i class="fa-solid fa-tower-broadcast"></i> SMS Provider Status</h3></div>
         <div class="card-body">
             <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
                 <div>
@@ -220,13 +220,13 @@ if (file_exists($smsLogFile)) {
                     };
                     ?>
                     <span class="provider-badge <?= $providerClass ?>">
-                        <?= $smsProvider === 'log' ? '📝' : '📡' ?> <?= htmlspecialchars($providerLabel) ?>
+                        <?= $smsProvider === 'log' ? '<i class="fa-solid fa-pen-to-square"></i>' : '<i class="fa-solid fa-tower-broadcast"></i>' ?> <?= htmlspecialchars($providerLabel) ?>
                     </span>
                 </div>
                 <div>
                     <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:.2rem;">Notifications</div>
                     <span class="provider-badge <?= $smsEnabled ? 'provider-active' : 'provider-inactive' ?>">
-                        <?= $smsEnabled ? '✅ Enabled' : '❌ Disabled' ?>
+                        <?= $smsEnabled ? '<i class="fa-solid fa-circle-check"></i> Enabled' : '<i class="fa-solid fa-circle-xmark"></i> Disabled' ?>
                     </span>
                 </div>
             </div>
@@ -248,7 +248,7 @@ if (file_exists($smsLogFile)) {
     <?php if (!empty($users)): ?>
     <div class="card mb-3">
         <div class="card-header">
-            <h3>📨 Resend WhatsApp Invite</h3>
+            <h3><i class="fa-solid fa-envelope"></i> Resend WhatsApp Invite</h3>
             <span style="font-size:.8rem;color:var(--text-muted);">
                 Only users with ≥1 approved payment shown
             </span>
@@ -256,7 +256,7 @@ if (file_exists($smsLogFile)) {
         <div class="card-body" style="padding:0;">
             <?php if (empty($whatsappLink)): ?>
                 <div class="empty-state" style="padding:1.5rem;">
-                    <p>⚠️ Set the WhatsApp group link above before sending invites.</p>
+                    <p><i class="fa-solid fa-triangle-exclamation"></i> Set the WhatsApp group link above before sending invites.</p>
                 </div>
             <?php else: ?>
                 <div class="table-wrap">
@@ -280,9 +280,9 @@ if (file_exists($smsLogFile)) {
                                     </td>
                                     <td>
                                         <?php if ($u['whatsapp_invited']): ?>
-                                            <span class="badge badge-complete">✅ Invited</span>
+                                            <span class="badge badge-complete"><i class="fa-solid fa-circle-check"></i> Invited</span>
                                         <?php else: ?>
-                                            <span class="badge badge-pending">⏳ Not yet</span>
+                                            <span class="badge badge-pending"><i class="fa-regular fa-clock"></i> Not yet</span>
                                         <?php endif; ?>
                                     </td>
                                     <td>
@@ -290,9 +290,8 @@ if (file_exists($smsLogFile)) {
                                             <form method="POST"
                                                   onsubmit="return confirm('Resend WhatsApp invite to <?= addslashes($u['full_name']) ?>?')">
                                                 <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
-                                                <button type="submit" name="resend_invite"
-                                                        class="btn btn-sm btn-whatsapp">
-                                                    📱 Resend
+                                                <button type="submit" name="resend_invite" class="btn btn-sm btn-whatsapp">
+                                                    <i class="fa-brands fa-whatsapp"></i> Resend
                                                 </button>
                                             </form>
                                         <?php else: ?>
@@ -314,12 +313,12 @@ if (file_exists($smsLogFile)) {
     <!-- ===== SMS LOG ===== -->
     <div class="card">
         <div class="card-header">
-            <h3>📋 Recent SMS Log</h3>
+            <h3><i class="fa-solid fa-list"></i> Recent SMS Log</h3>
             <span style="font-size:.78rem;color:var(--text-muted);">Last 20 entries from sms_log.txt</span>
         </div>
         <?php if (empty($smsLog)): ?>
             <div class="empty-state" style="padding:1.5rem;">
-                <div class="empty-icon">📭</div>
+                <div class="empty-icon"><i class="fa-regular fa-envelope-open"></i></div>
                 <p>No SMS activity logged yet.</p>
                 <small style="color:var(--text-muted);">
                     Log file: <code><?= htmlspecialchars(realpath($smsLogFile) ?: $smsLogFile) ?></code>
@@ -338,7 +337,7 @@ if (file_exists($smsLogFile)) {
                    onclick="return confirm('Clear the SMS log file?')"
                    class="btn btn-sm btn-outline"
                    style="color:var(--red);border-color:var(--red);">
-                    🗑️ Clear Log
+                    <i class="fa-solid fa-trash-can"></i> Clear Log
                 </a>
             </div>
         <?php endif; ?>
@@ -346,6 +345,6 @@ if (file_exists($smsLogFile)) {
 
 </div>
 
-<div class="footer">🌍 <?= htmlspecialchars($tripName) ?> — Admin Panel</div>
+<div class="footer"><i class="fa-solid fa-globe"></i> <?= htmlspecialchars($tripName) ?> — Admin Panel</div>
 </body>
 </html>

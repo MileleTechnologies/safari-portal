@@ -1,31 +1,30 @@
 <?php
-// index.php — User Portal (v2: Approval Workflow)
+// index.php — User Portal (v2: Approval Workflow with Auth)
 require_once __DIR__ . '/config.php';
 
+// Require user to be logged in
+requireUser();
+
 $error = '';
-$user  = null;
 $payments = [];
 $totalApproved = 0;
 $totalPending  = 0;
 
-$workIdInput = trim(strtoupper($_POST['work_id'] ?? $_GET['work_id'] ?? ''));
+// Get current logged-in user
+$user = getCurrentUser();
+if (!$user) {
+    // User not found in DB (maybe deleted), logout and redirect
+    redirect(BASE_URL . '/logout.php');
+}
 
-if ($workIdInput) {
-    $db = getDB();
-    $stmt = $db->prepare("SELECT * FROM users WHERE work_id = ?");
-    $stmt->execute([$workIdInput]);
-    $user = $stmt->fetch();
-    if (!$user) {
-        $error = "Work ID not found. Please check and try again.";
-    } else {
-        $stmt2 = $db->prepare("SELECT * FROM payments WHERE user_id = ? ORDER BY created_at DESC");
-        $stmt2->execute([$user['id']]);
-        $payments = $stmt2->fetchAll();
-        foreach ($payments as $p) {
-            if ($p['status'] === 'approved') $totalApproved += (float)$p['amount'];
-            if ($p['status'] === 'pending')  $totalPending  += (float)$p['amount'];
-        }
-    }
+// Load user's payments
+$db = getDB();
+$stmt = $db->prepare("SELECT * FROM payments WHERE user_id = ? ORDER BY created_at DESC");
+$stmt->execute([$user['id']]);
+$payments = $stmt->fetchAll();
+foreach ($payments as $p) {
+    if ($p['status'] === 'approved') $totalApproved += (float)$p['amount'];
+    if ($p['status'] === 'pending')  $totalPending  += (float)$p['amount'];
 }
 
 $flash    = getFlash();
@@ -39,72 +38,46 @@ $tripName = getSetting('trip_name') ?: APP_NAME;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($tripName) ?></title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
 </head>
 <body>
 <nav class="navbar">
-    <a class="navbar-brand" href="index.php"><span class="icon">&#x1F981;</span> Safari Portal</a>
+    <a class="navbar-brand" href="index.php"><span class="icon"><i class="fa-solid fa-paw"></i></span> Safari Portal</a>
     <div class="navbar-links">
-        <a href="index.php" class="active">My Dashboard</a>
-        <a href="admin/admin-login.php">Admin</a>
+        <span style="color:var(--text-muted);margin-right:1rem;"><i class="fa-solid fa-user"></i> <?= htmlspecialchars($user['full_name']) ?></span>
+        <a href="change-password.php"><i class="fa-solid fa-key"></i> Change Password</a>
+        <a href="logout.php"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
     </div>
 </nav>
 <div class="page-header">
     <div class="subtitle">Employee Portal</div>
     <h1><?= htmlspecialchars($tripName) ?></h1>
-    <p>Enter your Work ID to view your contribution status</p>
+    <p>Welcome back, <?= htmlspecialchars($user['full_name']) ?>. View your contribution status below.</p>
 </div>
 <div class="container" style="padding-top:2rem;padding-bottom:2rem;">
-<div class="card mb-3">
-    <div class="card-header"><h3>&#x1F50D; Fetch My Dashboard</h3></div>
-    <div class="card-body">
-        <form method="POST" action="">
-            <div class="form-group">
-                <label for="work_id">Your Work ID</label>
-                <div class="fetch-bar">
-                    <input type="text" id="work_id" name="work_id" class="form-control"
-                           placeholder="e.g. EMP001"
-                           value="<?= htmlspecialchars($workIdInput) ?>"
-                           autocomplete="off" autofocus required>
-                    <button type="submit" class="btn btn-primary">Fetch &#x279C;</button>
-                </div>
-            </div>
-            <?php if ($error): ?>
-                <div class="alert alert-error">&#x26A0;&#xFE0F; <?= htmlspecialchars($error) ?></div>
-            <?php endif; ?>
-        </form>
-    </div>
-</div>
-
-<?php if ($flash): ?>
-<div class="alert alert-<?= $flash['type'] ?>">
-    <?= $flash['type'] === 'success' ? '&#x2705;' : '&#x26A0;&#xFE0F;' ?>
-    <?= htmlspecialchars($flash['message']) ?>
-</div>
-<?php endif; ?>
-
-<?php if ($user):
-    $target       = (float)$user['target_amount'];
-    $remaining    = max(0, $target - $totalApproved);
-    $percent      = $target > 0 ? min(100, round(($totalApproved / $target) * 100)) : 0;
-    $isComplete   = $totalApproved >= $target;
-    $hasApproved  = $totalApproved > 0;
-    $pendingCount = count(array_filter($payments, fn($p) => $p['status'] === 'pending'));
+<?php
+$target       = (float)$user['target_amount'];
+$remaining    = max(0, $target - $totalApproved);
+$percent      = $target > 0 ? min(100, round(($totalApproved / $target) * 100)) : 0;
+$isComplete   = $totalApproved >= $target;
+$hasApproved  = $totalApproved > 0;
+$pendingCount = count(array_filter($payments, fn($p) => $p['status'] === 'pending'));
 ?>
 
 <div class="user-info-card">
-    <div class="user-avatar">&#x1F464;</div>
+    <div class="user-avatar"><i class="fa-solid fa-user"></i></div>
     <div>
         <div class="user-name"><?= htmlspecialchars($user['full_name']) ?></div>
         <span class="user-id">ID: <?= htmlspecialchars($user['work_id']) ?></span>
     </div>
     <?php if ($isComplete): ?>
-        <span class="badge badge-complete" style="margin-left:auto;">&#x2705; Complete</span>
+        <span class="badge badge-complete" style="margin-left:auto;"><i class="fa-solid fa-circle-check"></i> Complete</span>
     <?php endif; ?>
 </div>
 
 <?php if ($pendingCount > 0): ?>
 <div class="pending-banner">
-    <div class="pb-icon">&#x23F3;</div>
+    <div class="pb-icon"><i class="fa-regular fa-clock"></i></div>
     <div>
         <div class="pb-count"><?= $pendingCount ?></div>
         <div class="pb-label">payment request<?= $pendingCount > 1 ? 's' : '' ?> awaiting admin approval</div>
@@ -114,22 +87,22 @@ $tripName = getSetting('trip_name') ?: APP_NAME;
 
 <div class="stats-grid mb-3">
     <div class="stat-card">
-        <div class="stat-icon">&#x1F3AF;</div>
+        <div class="stat-icon"><i class="fa-solid fa-bullseye"></i></div>
         <div class="stat-value"><?= money($target) ?></div>
         <div class="stat-label">Target</div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon">&#x2705;</div>
+        <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
         <div class="stat-value"><?= money($totalApproved) ?></div>
         <div class="stat-label">Approved</div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon">&#x23F3;</div>
+        <div class="stat-icon"><i class="fa-regular fa-clock"></i></div>
         <div class="stat-value"><?= money($totalPending) ?></div>
         <div class="stat-label">Pending</div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon">&#x1F4B8;</div>
+        <div class="stat-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
         <div class="stat-value"><?= money($remaining) ?></div>
         <div class="stat-label">Remaining</div>
     </div>
@@ -150,56 +123,56 @@ $tripName = getSetting('trip_name') ?: APP_NAME;
         </div>
         <?php if ($totalPending > 0): ?>
             <div style="font-size:0.8rem;color:#856404;margin-top:0.5rem;">
-                &#x23F3; <?= money($totalPending) ?> pending — not counted until approved
+                <i class="fa-regular fa-clock"></i> <?= money($totalPending) ?> pending — not counted until approved
             </div>
         <?php endif; ?>
         <?php if ($isComplete): ?>
-            <div class="alert alert-success mt-2">&#x1F389; Congratulations! You have completed your contribution!</div>
+            <div class="alert alert-success mt-2"><i class="fa-solid fa-party-horn"></i> Congratulations! You have completed your contribution!</div>
         <?php endif; ?>
     </div>
 </div>
 
 <div class="flex gap-2 wrap mb-3">
     <button onclick="document.getElementById('payModal').style.display='flex'" class="btn btn-primary">
-        &#x1F4B3; Submit Payment Request
+        <i class="fa-solid fa-credit-card"></i> Submit Payment Request
     </button>
     <?php if ($hasApproved && $whatsapp): ?>
         <a href="<?= htmlspecialchars($whatsapp) ?>" target="_blank" rel="noopener" class="btn btn-whatsapp">
-            &#x1F4F1; Join WhatsApp Group
+            <i class="fa-brands fa-whatsapp"></i> Join WhatsApp Group
         </a>
     <?php else: ?>
         <button class="btn btn-whatsapp locked" disabled title="Unlocked after your first approved payment">
-            &#x1F512; Join WhatsApp Group
+            <i class="fa-solid fa-lock"></i> Join WhatsApp Group
         </button>
     <?php endif; ?>
 </div>
 
 <?php if (!$hasApproved && $pendingCount === 0): ?>
 <div class="alert alert-info mb-3">
-    &#x1F4A1; Submit your first payment request. WhatsApp access unlocks after admin approval.
+    <i class="fa-solid fa-lightbulb"></i> Submit your first payment request. WhatsApp access unlocks after admin approval.
 </div>
 <?php elseif (!$hasApproved && $pendingCount > 0): ?>
 <div class="alert alert-warning mb-3">
-    &#x23F3; Your request is under review. WhatsApp access unlocks once approved.
+    <i class="fa-regular fa-clock"></i> Your request is under review. WhatsApp access unlocks once approved.
 </div>
 <?php endif; ?>
 
 <div class="card">
     <div class="card-header">
-        <h3>&#x1F9FE; Payment History</h3>
+        <h3><i class="fa-solid fa-receipt"></i> Payment History</h3>
         <span class="badge badge-partial"><?= count($payments) ?> record(s)</span>
     </div>
     <?php if (empty($payments)): ?>
         <div class="empty-state">
-            <div class="empty-icon">&#x1F4B3;</div>
+            <div class="empty-icon"><i class="fa-solid fa-credit-card"></i></div>
             <p>No payment requests yet.</p>
         </div>
     <?php else: ?>
         <?php foreach ($payments as $p):
             $sMap = [
-                'pending'  => ['label' => '&#x23F3; Pending Approval', 'cls' => 'pending'],
-                'approved' => ['label' => '&#x2705; Approved',         'cls' => 'approved'],
-                'rejected' => ['label' => '&#x274C; Rejected',         'cls' => 'rejected'],
+                'pending'  => ['label' => '<i class="fa-regular fa-clock"></i> Pending Approval', 'cls' => 'pending'],
+                'approved' => ['label' => '<i class="fa-solid fa-circle-check"></i> Approved',      'cls' => 'approved'],
+                'rejected' => ['label' => '<i class="fa-solid fa-circle-xmark"></i> Rejected',      'cls' => 'rejected'],
             ];
             $si = $sMap[$p['status']] ?? $sMap['pending'];
             $amtColor = $p['status']==='approved' ? 'var(--green)' : ($p['status']==='rejected' ? 'var(--red)' : '#856404');
@@ -210,7 +183,7 @@ $tripName = getSetting('trip_name') ?: APP_NAME;
                     <span class="pay-status <?= $si['cls'] ?>"><?= $si['label'] ?></span>
                     <strong style="color:<?= $amtColor ?>"><?= money($p['amount']) ?></strong>
                 </div>
-                <div class="pay-date">&#x1F4C5; <?= date('D, d M Y', strtotime($p['payment_date'])) ?></div>
+                <div class="pay-date"><i class="fa-regular fa-calendar"></i> <?= date('D, d M Y', strtotime($p['payment_date'])) ?></div>
                 <?php if (!empty($p['reference_number'])): ?>
                     <div class="pay-ref">Ref: <?= htmlspecialchars($p['reference_number']) ?></div>
                 <?php endif; ?>
@@ -230,7 +203,7 @@ $tripName = getSetting('trip_name') ?: APP_NAME;
                     <img src="<?= $fUrl ?>" class="proof-thumb"
                          onclick="openLightbox('<?= $fUrl ?>')" alt="Proof">
                 <?php else: ?>
-                    <a href="<?= $fUrl ?>" target="_blank" class="proof-pdf-icon" title="View PDF">&#x1F4C4;</a>
+                    <a href="<?= $fUrl ?>" target="_blank" class="proof-pdf-icon" title="View PDF"><i class="fa-solid fa-file-pdf"></i></a>
                 <?php endif; ?>
             </div>
             <?php endif; ?>
@@ -239,20 +212,17 @@ $tripName = getSetting('trip_name') ?: APP_NAME;
     <?php endif; ?>
 </div>
 
-<?php endif; ?>
-</div>
-
 <!-- PAYMENT MODAL -->
 <div id="payModal" class="modal-overlay" style="display:none;">
     <div class="modal-box" style="max-width:460px;">
         <div class="flex-between mb-2">
-            <h3>&#x1F4B3; Submit Payment Request</h3>
+            <h3><i class="fa-solid fa-credit-card"></i> Submit Payment Request</h3>
             <button onclick="document.getElementById('payModal').style.display='none'"
-                    style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-muted);">&#x2715;</button>
+                    style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-muted);"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <?php if ($user): ?>
         <div style="background:var(--gold-pale);border-radius:8px;padding:0.7rem 1rem;margin-bottom:1.2rem;font-size:0.88rem;color:var(--brown-mid);">
-            &#x1F4CB; Your request will be reviewed by admin before counting toward your target.
+            <i class="fa-solid fa-clipboard-list"></i> Your request will be reviewed by admin before counting toward your target.
         </div>
         <form method="POST" action="submit-payment.php" enctype="multipart/form-data">
             <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
@@ -276,29 +246,29 @@ $tripName = getSetting('trip_name') ?: APP_NAME;
                 <div class="file-upload-zone" id="uploadZone">
                     <input type="file" name="proof_file" id="proofFile"
                            accept="image/*,.pdf" onchange="updateFileName(this)">
-                    <div class="upload-icon">&#x1F4CE;</div>
+                    <div class="upload-icon"><i class="fa-solid fa-paperclip"></i></div>
                     <div class="upload-text">Click or drag file here</div>
                     <div class="upload-hint">JPG, PNG, PDF — max 5MB</div>
                     <div class="file-preview-name" id="filePreviewName" style="display:none;"></div>
                 </div>
             </div>
             <button type="submit" class="btn btn-primary btn-full" style="margin-top:0.25rem;">
-                &#x1F4E4; Submit for Approval
+                <i class="fa-solid fa-paper-plane"></i> Submit for Approval
             </button>
         </form>
         <?php else: ?>
-            <p>Please fetch your dashboard first by entering your Work ID above.</p>
+            <p>Please login to submit a payment request.</p>
         <?php endif; ?>
     </div>
 </div>
 
 <!-- LIGHTBOX -->
 <div id="lightbox" class="lightbox-overlay" style="display:none;" onclick="closeLightbox()">
-    <button class="lightbox-close" onclick="closeLightbox()">&#x2715;</button>
+    <button class="lightbox-close" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></button>
     <img id="lightboxImg" src="" alt="Payment Proof">
 </div>
 
-<div class="footer">&#x1F30D; <?= htmlspecialchars($tripName) ?> &nbsp;|&nbsp; Safari Contribution Portal</div>
+<div class="footer"><i class="fa-solid fa-globe"></i> <?= htmlspecialchars($tripName) ?> &nbsp;|&nbsp; Safari Contribution Portal</div>
 
 <script>
 const widInput = document.getElementById('work_id');

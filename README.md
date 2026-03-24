@@ -68,7 +68,7 @@ define('ADMIN_PASSWORD', 'safari2025'); // Change this!
 
 ### 6. Set Currency (Optional)
 ```php
-define('CURRENCY', 'KSh');  // or 'USD', 'NGN', 'ZAR', etc.
+define('CURRENCY', 'TSh');  // or 'USD', 'NGN', 'ZAR', etc.
 ```
 
 ### 7. Access the Portal
@@ -83,11 +83,11 @@ define('CURRENCY', 'KSh');  // or 'USD', 'NGN', 'ZAR', etc.
 
 | Name           | Work ID | Target    |
 |----------------|---------|-----------|
-| Alice Mwangi   | EMP001  | KSh 5,000 |
-| Brian Ochieng  | EMP002  | KSh 5,000 |
-| Carol Njeri    | EMP003  | KSh 3,500 |
-| David Kamau    | EMP004  | KSh 5,000 |
-| Eva Wambui     | EMP005  | KSh 4,000 |
+| Alice Mwangi   | EMP001  | TSh 5,000 |
+| Brian Ochieng  | EMP002  | TSh 5,000 |
+| Carol Njeri    | EMP003  | TSh 3,500 |
+| David Kamau    | EMP004  | TSh 5,000 |
+| Eva Wambui     | EMP005  | TSh 4,000 |
 
 **Default admin credentials:**
 - Username: `admin`

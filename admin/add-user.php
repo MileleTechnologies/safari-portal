@@ -7,18 +7,21 @@ requireAdmin();
 
 $flash  = getFlash();
 $errors = [];
-$form   = ['full_name' => '', 'work_id' => '', 'phone_number' => '', 'target_amount' => ''];
+$form   = ['full_name' => '', 'work_id' => '', 'phone_number' => '', 'target_amount' => '', 'password' => ''];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_user'])) {
     $form['full_name']     = trim($_POST['full_name']     ?? '');
     $form['work_id']       = strtoupper(trim($_POST['work_id'] ?? ''));
     $form['phone_number']  = trim($_POST['phone_number']  ?? '');
+    $form['password']      = trim($_POST['password']      ?? '');
     $form['target_amount'] = trim($_POST['target_amount'] ?? '');
 
     // Validation
     if (empty($form['full_name']))    $errors[] = 'Full name is required.';
     if (empty($form['work_id']))      $errors[] = 'Work ID is required.';
     if (empty($form['phone_number'])) $errors[] = 'Phone number is required.';
+    if (empty($form['password']) || strlen($form['password']) < 4)
+        $errors[] = 'Password is required (minimum 4 characters).';
     if (!is_numeric($form['target_amount']) || (float)$form['target_amount'] <= 0)
         $errors[] = 'Target amount must be a positive number.';
 
@@ -34,12 +37,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_user'])) {
         if ($stmt->fetch()) {
             $errors[] = 'Work ID "' . htmlspecialchars($form['work_id']) . '" already exists.';
         } else {
-            $stmt = $db->prepare("INSERT INTO users (full_name, work_id, phone_number, target_amount) VALUES (?, ?, ?, ?)");
+            $stmt = $db->prepare("INSERT INTO users (full_name, work_id, phone_number, target_amount, password) VALUES (?, ?, ?, ?, ?)");
             $stmt->execute([
                 $form['full_name'],
                 $form['work_id'],
                 $form['phone_number'],
-                (float)$form['target_amount']
+                (float)$form['target_amount'],
+                $form['password']
             ]);
             setFlash('success', 'User "' . $form['full_name'] . '" added successfully!');
             redirect('admin-dashboard.php');
@@ -56,12 +60,13 @@ $tripName = getSetting('trip_name') ?: APP_NAME;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add User — <?= htmlspecialchars($tripName) ?></title>
     <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
 </head>
 <body>
 
 <nav class="navbar">
     <a class="navbar-brand" href="admin-dashboard.php">
-        <span class="icon">🦁</span> Admin Panel
+        <span class="icon"><i class="fa-solid fa-paw"></i></span> Admin Panel
     </a>
     <div class="navbar-links">
         <a href="admin-dashboard.php">Dashboard</a>
@@ -81,13 +86,13 @@ $tripName = getSetting('trip_name') ?: APP_NAME;
 
     <?php if ($flash): ?>
         <div class="alert alert-<?= $flash['type'] ?>">
-            <?= $flash['type'] === 'success' ? '✅' : '⚠️' ?> <?= htmlspecialchars($flash['message']) ?>
+            <?= $flash['type'] === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-triangle-exclamation"></i>' ?> <?= htmlspecialchars($flash['message']) ?>
         </div>
     <?php endif; ?>
 
     <?php if (!empty($errors)): ?>
         <div class="alert alert-error">
-            ⚠️ Please fix the following:
+            <i class="fa-solid fa-triangle-exclamation"></i> Please fix the following:
             <ul style="margin:0.4rem 0 0 1.2rem;">
                 <?php foreach ($errors as $e): ?>
                     <li><?= htmlspecialchars($e) ?></li>
@@ -97,7 +102,7 @@ $tripName = getSetting('trip_name') ?: APP_NAME;
     <?php endif; ?>
 
     <div class="card">
-        <div class="card-header"><h3>👤 User Details</h3></div>
+        <div class="card-header"><h3><i class="fa-solid fa-user"></i> User Details</h3></div>
         <div class="card-body">
             <form method="POST" action="">
 
@@ -128,6 +133,16 @@ $tripName = getSetting('trip_name') ?: APP_NAME;
                 </div>
 
                 <div class="form-group">
+                    <label for="password">Initial Password <span style="color:var(--red)">*</span></label>
+                    <input type="password" id="password" name="password" class="form-control"
+                           placeholder="Enter initial password (min 4 chars)"
+                           required>
+                    <small style="color:var(--text-muted);">
+                        User will use this password to login. They can change it later.
+                    </small>
+                </div>
+
+                <div class="form-group">
                     <label for="target_amount">Target Contribution (<?= CURRENCY ?>) <span style="color:var(--red)">*</span></label>
                     <input type="number" id="target_amount" name="target_amount" class="form-control"
                            placeholder="e.g. 5000"
@@ -136,7 +151,7 @@ $tripName = getSetting('trip_name') ?: APP_NAME;
                 </div>
 
                 <div class="flex gap-2 mt-2">
-                    <button type="submit" name="add_user" class="btn btn-primary">➕ Add User</button>
+                    <button type="submit" name="add_user" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Add User</button>
                     <a href="admin-dashboard.php" class="btn btn-outline">Cancel</a>
                 </div>
             </form>
@@ -146,7 +161,7 @@ $tripName = getSetting('trip_name') ?: APP_NAME;
     <!-- SMS info box -->
     <div class="card mt-3" style="border-left:4px solid var(--gold);">
         <div class="card-body" style="padding:1rem 1.2rem;">
-            <strong style="color:var(--brown);">📱 How SMS notifications work</strong>
+            <strong style="color:var(--brown);"><i class="fa-solid fa-mobile-screen"></i> How SMS notifications work</strong>
             <p style="font-size:0.85rem;margin-top:0.4rem;">
                 After the admin approves this user's <strong>first payment</strong>, the system will automatically
                 send an SMS to their phone number containing the WhatsApp group invite link.
@@ -161,7 +176,7 @@ $tripName = getSetting('trip_name') ?: APP_NAME;
 
 </div>
 
-<div class="footer">🌍 Safari Portal — Admin</div>
+<div class="footer"><i class="fa-solid fa-globe"></i> Safari Portal — Admin</div>
 
 <script>
 document.getElementById('work_id').addEventListener('input', function() {

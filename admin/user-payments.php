@@ -58,10 +58,11 @@ $tripName  = getSetting('trip_name') ?: APP_NAME;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($user['full_name']) ?> — Payments</title>
     <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
 </head>
 <body>
 <nav class="navbar">
-    <a class="navbar-brand" href="admin-dashboard.php"><span class="icon">🦁</span> Admin Panel</a>
+    <a class="navbar-brand" href="admin-dashboard.php"><span class="icon"><i class="fa-solid fa-paw"></i></span> Admin Panel</a>
     <div class="navbar-links">
         <a href="admin-dashboard.php">Dashboard</a>
         <a href="payment-requests.php">Requests</a>
@@ -76,10 +77,10 @@ $tripName  = getSetting('trip_name') ?: APP_NAME;
     <p>
         Work ID: <?= htmlspecialchars($user['work_id']) ?>
         <?php if (!empty($user['phone_number'])): ?>
-            &nbsp;|&nbsp; 📱 <?= htmlspecialchars($user['phone_number']) ?>
+            &nbsp;|&nbsp; <i class="fa-solid fa-mobile-screen"></i> <?= htmlspecialchars($user['phone_number']) ?>
         <?php endif; ?>
         <?php if ($user['whatsapp_invited']): ?>
-            &nbsp;|&nbsp; <span style="color:#25D366;font-weight:600;">📱 WA Invited</span>
+            &nbsp;|&nbsp; <span style="color:#25D366;font-weight:600;"><i class="fa-brands fa-whatsapp"></i> WA Invited</span>
         <?php endif; ?>
     </p>
 </div>
@@ -88,28 +89,28 @@ $tripName  = getSetting('trip_name') ?: APP_NAME;
 
     <?php if ($flash): ?>
         <div class="alert alert-<?= $flash['type'] ?>">
-            <?= $flash['type']==='success' ? '✅' : '⚠️' ?> <?= htmlspecialchars($flash['message']) ?>
+            <?= $flash['type']==='success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-triangle-exclamation"></i>' ?> <?= htmlspecialchars($flash['message']) ?>
         </div>
     <?php endif; ?>
 
     <div class="stats-grid mb-3">
         <div class="stat-card">
-            <div class="stat-icon">🎯</div>
+            <div class="stat-icon"><i class="fa-solid fa-bullseye"></i></div>
             <div class="stat-value"><?= money($target) ?></div>
             <div class="stat-label">Target</div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">✅</div>
+            <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
             <div class="stat-value"><?= money($approved) ?></div>
             <div class="stat-label">Approved</div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">⏳</div>
+            <div class="stat-icon"><i class="fa-regular fa-clock"></i></div>
             <div class="stat-value"><?= money($pending) ?></div>
             <div class="stat-label">Pending</div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">💳</div>
+            <div class="stat-icon"><i class="fa-solid fa-credit-card"></i></div>
             <div class="stat-value"><?= money($remaining) ?></div>
             <div class="stat-label">Remaining</div>
         </div>
@@ -128,17 +129,17 @@ $tripName  = getSetting('trip_name') ?: APP_NAME;
     </div>
 
     <div class="flex gap-2 wrap mb-3">
-        <a href="payment-requests.php" class="btn btn-primary">🔍 All Requests</a>
+        <a href="payment-requests.php" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> All Requests</a>
         <a href="admin-dashboard.php" class="btn btn-outline">← Dashboard</a>
     </div>
 
     <div class="card">
         <div class="card-header">
-            <h3>🧾 Payment Records</h3>
+            <h3><i class="fa-solid fa-receipt"></i> Payment Records</h3>
             <span class="badge badge-partial"><?= count($payments) ?> total</span>
         </div>
         <?php if (empty($payments)): ?>
-            <div class="empty-state"><div class="empty-icon">💳</div><p>No payments yet.</p></div>
+            <div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-credit-card"></i></div><p>No payments yet.</p></div>
         <?php else: ?>
             <div class="table-wrap">
                 <table>
@@ -173,7 +174,7 @@ $tripName  = getSetting('trip_name') ?: APP_NAME;
                                         </a>
                                     <?php else: ?>
                                         <a href="../uploads/<?= htmlspecialchars($p['proof_file']) ?>"
-                                           target="_blank" class="btn btn-sm btn-outline">📄 PDF</a>
+                                           target="_blank" class="btn btn-sm btn-outline"><i class="fa-solid fa-file-pdf"></i> PDF</a>
                                     <?php endif; ?>
                                 <?php else: ?>
                                     <span style="color:var(--text-muted);font-size:.8rem;">—</span>
@@ -196,14 +197,20 @@ $tripName  = getSetting('trip_name') ?: APP_NAME;
                                         <form method="POST" onsubmit="return confirm('Approve this payment? SMS will be sent.')">
                                             <input type="hidden" name="payment_id" value="<?= $p['id'] ?>">
                                             <input type="hidden" name="action" value="approve">
-                                            <button class="btn btn-sm btn-success">✅</button>
+                                            <button type="submit" class="btn btn-sm btn-success" title="Approve">
+                                                <i class="fa-solid fa-circle-check"></i> Approve
+                                            </button>
                                         </form>
-                                        <button onclick="openReject(<?= $p['id'] ?>)" class="btn btn-sm btn-danger">❌</button>
+                                        <button type="button" onclick="openReject(<?= $p['id'] ?>)" class="btn btn-sm btn-danger" title="Reject">
+                                            <i class="fa-solid fa-circle-xmark"></i> Reject
+                                        </button>
                                     <?php endif; ?>
                                     <form method="POST" onsubmit="return confirm('Delete this record permanently?')">
                                         <input type="hidden" name="payment_id" value="<?= $p['id'] ?>">
                                         <input type="hidden" name="action" value="delete">
-                                        <button class="btn btn-sm btn-outline">🗑️</button>
+                                        <button type="submit" class="btn btn-sm btn-outline" title="Delete">
+                                            <i class="fa-solid fa-trash-can"></i> Delete
+                                        </button>
                                     </form>
                                 </div>
                             </td>
@@ -216,14 +223,14 @@ $tripName  = getSetting('trip_name') ?: APP_NAME;
     </div>
 </div>
 
-<div class="footer">🌍 Safari Portal — Admin</div>
+<div class="footer"><i class="fa-solid fa-globe"></i> Safari Portal — Admin</div>
 
 <div id="rejectModal" class="modal-overlay" style="display:none;">
     <div class="modal-box">
         <div class="flex-between mb-2">
-            <h3>❌ Reject Payment</h3>
+            <h3><i class="fa-solid fa-circle-xmark"></i> Reject Payment</h3>
             <button onclick="document.getElementById('rejectModal').style.display='none'"
-                    style="background:none;border:none;font-size:1.4rem;cursor:pointer;">✕</button>
+                    style="background:none;border:none;font-size:1.4rem;cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form method="POST">
             <input type="hidden" name="payment_id" id="rPayId">
